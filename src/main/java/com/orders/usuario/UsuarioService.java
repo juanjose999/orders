@@ -1,4 +1,7 @@
 package com.orders.usuario;
+import com.orders.auth.dto.AuthResponse;
+import com.orders.auth.dto.SignupRequest;
+import com.orders.security.JwtService;
 import com.orders.usuario.dto.UsuarioRequest;
 import com.orders.usuario.dto.UsuarioResponse;
 import lombok.RequiredArgsConstructor;
@@ -12,19 +15,26 @@ import org.springframework.transaction.annotation.Transactional;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     @Transactional
-    public UsuarioResponse registrarUsuario(UsuarioRequest usuarioRequest) {
-        validarEmailDisponible(usuarioRequest.email());
-        Usuario usuario = UsuarioMapper.toUsuario(usuarioRequest);
+    public UsuarioResponse registrarUsuario(SignupRequest signupRequest) {
+        validarEmailDisponible(signupRequest.email());
+        Usuario usuario = UsuarioMapper.toUsuario(signupRequest);
+        usuario.setPassword(passwordEncoder.encode(signupRequest.password()));
+        usuario.setRol(Rol.ADMIN);
+
         usuarioRepository.save(usuario);
         UsuarioResponse usuarioResponse = UsuarioMapper.toResponse(usuario);
         return usuarioResponse;
     }
 
-    public Usuario obtenerPorEmail(String email) {
-        return usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con el correo: " + email));
+    public UsuarioResponse obtenerPorEmail(String email) {
+        return UsuarioMapper.toResponse(
+                usuarioRepository.findByEmail(email)
+                        .orElseThrow(() -> new RuntimeException("Usuario no encontrado con el correo: " + email))
+        );
     }
 
     public void validarEmailDisponible(String email) {
@@ -32,6 +42,5 @@ public class UsuarioService {
             throw new RuntimeException("Ya existe un usuario registrado con el correo: " + email);
         }
     }
-
 
 }
