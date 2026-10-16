@@ -19,12 +19,11 @@ public class UsuarioService {
     private final JwtService jwtService;
 
     @Transactional
-    public UsuarioResponse registrarUsuario(SignupRequest signupRequest) {
+    public UsuarioResponse registrarUsuario(SignupRequest signupRequest, Boolean isAdmin) {
         validarEmailDisponible(signupRequest.email());
         Usuario usuario = UsuarioMapper.toUsuario(signupRequest);
         usuario.setPassword(passwordEncoder.encode(signupRequest.password()));
-        usuario.setRol(Rol.ADMIN);
-
+        usuario.setRol(isAdmin ? Rol.ADMIN : Rol.CLIENT);
         usuarioRepository.save(usuario);
         UsuarioResponse usuarioResponse = UsuarioMapper.toResponse(usuario);
         return usuarioResponse;

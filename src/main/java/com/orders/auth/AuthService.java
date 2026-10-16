@@ -26,9 +26,10 @@ public class AuthService {
     private final JwtService jwtService;
 
     @Transactional
-    public AuthResponse registrarAdmin(SignupRequest signupRequest) {
-        return construirRespuesta(usuarioService.registrarUsuario(signupRequest));
+    public AuthResponse registrarUsuario(SignupRequest signupRequest, Boolean isAdmin) {
+        return construirRespuesta(usuarioService.registrarUsuario(signupRequest, isAdmin));
     }
+
 
     /**
      * Login con contraseña; solo los administradores tienen una, así que un socio recibe 401.
